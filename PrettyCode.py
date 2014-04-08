@@ -39,7 +39,7 @@ class PrettyCodeCommand(sublime_plugin.TextCommand):
             # This allows for scratch buffers and dirty files to be beautified as well.
 
             bufferText = self.view.substr(sublime.Region(0, self.view.size()))
-            tempFile = PLUGIN_FOLDER + "/.__temp__"
+            tempFile = PLUGIN_FOLDER + "/__temp__"
             f = codecs.open(tempFile, mode = 'w', encoding = 'utf-8')
             f.write(bufferText)
             f.close()
