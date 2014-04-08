@@ -188,6 +188,7 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         bt('a.b({c:"d"})', 'a.b({\n    c: "d"\n})');
         bt('a.b\n(\n{\nc:\n"d"\n}\n)', 'a.b({\n    c: "d"\n})');
         bt('a=!b', 'a = !b');
+        bt('a=!!b', 'a = !!b');
         bt('a?b:c', 'a ? b : c');
         bt('a?1:2', 'a ? 1 : 2');
         bt('a?(b):c', 'a ? (b) : c');
@@ -232,6 +233,7 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         bt('if (template.user[n] in bk) foo();');
         bt('{{}/z/}', "{\n    {}\n    /z/\n}");
         bt('return 45', "return 45");
+        bt('return this.prevObject ||\n\n    this.constructor(null);');
         bt('If[1]', "If[1]");
         bt('Then[1]', "Then[1]");
         bt('a = 1e10', "a = 1e10");
@@ -369,6 +371,7 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         // allow unescaped / in char classes
         bt('a(/[a/b]/);b()', "a(/[a/b]/);\nb()");
 
+        bt('function foo() {\n    return [\n        "one",\n        "two"\n    ];\n}');
         bt('a=[[1,2],[4,5],[7,8]]', "a = [\n    [1, 2],\n    [4, 5],\n    [7, 8]\n]");
         bt('a=[[1,2],[4,5],function(){},[7,8]]',
             "a = [\n    [1, 2],\n    [4, 5],\n    function() {},\n    [7, 8]\n]");
@@ -395,9 +398,9 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         bt('catch(e)', 'catch (e)');
 
         bt('var a=1,b={foo:2,bar:3},{baz:4,wham:5},c=4;',
-            'var a = 1,\n    b = {\n        foo: 2,\n        bar: 3\n    }, {\n        baz: 4,\n        wham: 5\n    }, c = 4;');
+            'var a = 1,\n    b = {\n        foo: 2,\n        bar: 3\n    },\n    {\n        baz: 4,\n        wham: 5\n    }, c = 4;');
         bt('var a=1,b={foo:2,bar:3},{baz:4,wham:5},\nc=4;',
-            'var a = 1,\n    b = {\n        foo: 2,\n        bar: 3\n    }, {\n        baz: 4,\n        wham: 5\n    },\n    c = 4;');
+            'var a = 1,\n    b = {\n        foo: 2,\n        bar: 3\n    },\n    {\n        baz: 4,\n        wham: 5\n    },\n    c = 4;');
 
 
         // inline comment
@@ -424,11 +427,16 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         bt('if (a) a()\nnewline()');
         bt('a=typeof(x)', 'a = typeof(x)');
 
-        bt('var a = function() {\n    return null;\n},\n    b = false;');
+        bt('var a = function() {\n        return null;\n    },\n    b = false;');
 
         bt('var a = function() {\n    func1()\n}');
         bt('var a = function() {\n    func1()\n}\nvar b = function() {\n    func2()\n}');
 
+        // code with and without semicolons
+        bt( 'var whatever = require("whatever");\nfunction() {\n    a = 6;\n}',
+            'var whatever = require("whatever");\n\nfunction() {\n    a = 6;\n}');
+        bt( 'var whatever = require("whatever")\nfunction() {\n    a = 6\n}',
+            'var whatever = require("whatever")\n\nfunction() {\n    a = 6\n}');
 
 
         opts.jslint_happy = true;
@@ -450,7 +458,7 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         bt('switch(x){case -1:break;case !y:break;}',
             'switch (x) {\n    case -1:\n        break;\n    case !y:\n        break;\n}');
         test_fragment("// comment 2\n(function()", "// comment 2\n(function()"); // typical greasemonkey start
-        bt("var a2, b2, c2, d2 = 0, c = function() {}, d = '';", "var a2, b2, c2, d2 = 0,\n    c = function() {}, d = '';");
+        bt("var a2, b2, c2, d2 = 0, c = function() {}, d = '';", "var a2, b2, c2, d2 = 0,\n    c = function() {},\n    d = '';");
         bt("var a2, b2, c2, d2 = 0, c = function() {},\nd = '';", "var a2, b2, c2, d2 = 0,\n    c = function() {},\n    d = '';");
         bt('var o2=$.extend(a);function(){alert(x);}', 'var o2 = $.extend(a);\n\nfunction() {\n    alert(x);\n}');
 
@@ -509,7 +517,7 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
           );
 
         opts.preserve_newlines = true;
-        bt('var\na=do_preserve_newlines;', 'var\na = do_preserve_newlines;');
+        bt('var\na=do_preserve_newlines;', 'var\n    a = do_preserve_newlines;');
         bt('// a\n// b\n\n// c\n// d');
         bt('if (foo) //  comment\n{\n    bar();\n}');
 
@@ -534,8 +542,69 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
             '{\n    a([\n        [a1]\n    ], {\n        b;\n    });\n}');
         bt("a();\n   [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
             "a();\n[\n    ['sdfsdfsd'],\n    ['sdfsdfsdf']\n].toString();");
+        bt("a();\na = [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
+            "a();\na = [\n    ['sdfsdfsd'],\n    ['sdfsdfsdf']\n].toString();");
         bt("function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}",
             "function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}");
+        bt('function foo() {\n    return [\n        "one",\n        "two"\n    ];\n}');
+        // 4 spaces per indent input, processed with 4-spaces per indent
+        bt( "function foo() {\n" +
+            "    return [\n" +
+            "        {\n" +
+            "            one: 'x',\n" +
+            "            two: [\n" +
+            "                {\n" +
+            "                    id: 'a',\n" +
+            "                    name: 'apple'\n" +
+            "                }, {\n" +
+            "                    id: 'b',\n" +
+            "                    name: 'banana'\n" +
+            "                }\n" +
+            "            ]\n" +
+            "        }\n" +
+            "    ];\n" +
+            "}",
+            "function foo() {\n" +
+            "    return [{\n" +
+            "        one: 'x',\n" +
+            "        two: [{\n" +
+            "            id: 'a',\n" +
+            "            name: 'apple'\n" +
+            "        }, {\n" +
+            "            id: 'b',\n" +
+            "            name: 'banana'\n" +
+            "        }]\n" +
+            "    }];\n" +
+            "}");
+        // 3 spaces per indent input, processed with 4-spaces per indent
+        bt( "function foo() {\n" +
+            "   return [\n" +
+            "      {\n" +
+            "         one: 'x',\n" +
+            "         two: [\n" +
+            "            {\n" +
+            "               id: 'a',\n" +
+            "               name: 'apple'\n" +
+            "            }, {\n" +
+            "               id: 'b',\n" +
+            "               name: 'banana'\n" +
+            "            }\n" +
+            "         ]\n" +
+            "      }\n" +
+            "   ];\n" +
+            "}",
+            "function foo() {\n" +
+            "    return [{\n" +
+            "        one: 'x',\n" +
+            "        two: [{\n" +
+            "            id: 'a',\n" +
+            "            name: 'apple'\n" +
+            "        }, {\n" +
+            "            id: 'b',\n" +
+            "            name: 'banana'\n" +
+            "        }]\n" +
+            "    }];\n" +
+            "}");
 
         opts.keep_array_indentation = true;
         bt("a = ['a', 'b', 'c',\n   'd', 'e', 'f']");
@@ -552,8 +621,47 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
             '{\n    a([[a1]], {\n        b;\n    });\n}');
         bt("a();\n   [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
             "a();\n   [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();");
+        bt("a();\na = [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();",
+            "a();\na = [\n   ['sdfsdfsd'],\n        ['sdfsdfsdf']\n   ].toString();");
         bt("function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}",
             "function() {\n    Foo([\n        ['sdfsdfsd'],\n        ['sdfsdfsdf']\n    ]);\n}");
+        bt('function foo() {\n    return [\n        "one",\n        "two"\n    ];\n}');
+        // 4 spaces per indent input, processed with 4-spaces per indent
+        bt( "function foo() {\n" +
+            "    return [\n" +
+            "        {\n" +
+            "            one: 'x',\n" +
+            "            two: [\n" +
+            "                {\n" +
+            "                    id: 'a',\n" +
+            "                    name: 'apple'\n" +
+            "                }, {\n" +
+            "                    id: 'b',\n" +
+            "                    name: 'banana'\n" +
+            "                }\n" +
+            "            ]\n" +
+            "        }\n" +
+            "    ];\n" +
+            "}");
+        // 3 spaces per indent input, processed with 4-spaces per indent
+        // Should be unchanged, but is not - #445
+//         bt( "function foo() {\n" +
+//             "   return [\n" +
+//             "      {\n" +
+//             "         one: 'x',\n" +
+//             "         two: [\n" +
+//             "            {\n" +
+//             "               id: 'a',\n" +
+//             "               name: 'apple'\n" +
+//             "            }, {\n" +
+//             "               id: 'b',\n" +
+//             "               name: 'banana'\n" +
+//             "            }\n" +
+//             "         ]\n" +
+//             "      }\n" +
+//             "   ];\n" +
+//             "}");
+
 
         opts.keep_array_indentation = false;
 
@@ -599,7 +707,9 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         bt('a: do {} while (); xxx', 'a: do {} while ();\nxxx');
         bt('var a = new function();');
         bt('var a = new function() {};');
-        bt('var a = new function a()\n    {};');
+        bt('var a = new function()\n{};', 'var a = new function() {};');
+        bt('var a = new function a()\n{};');
+        bt('var a = new function a()\n    {},\n    b = new function b()\n    {};');
         test_fragment('new function');
         bt("foo({\n    'a': 1\n},\n10);",
             "foo(\n    {\n        'a': 1\n    },\n    10);");
@@ -869,6 +979,7 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
         bt("{\n    var a = set\n    foo();\n}");
         bt("var x = {\n    get function()\n}");
         bt("var x = {\n    set function()\n}");
+        bt("var x = set\n\na() {}", "var x = set\n\n    a() {}");
         bt("var x = set\n\nfunction() {}", "var x = set\n\n    function() {}");
 
         bt('<!-- foo\nbar();\n-->');
@@ -1499,12 +1610,10 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
            '    });');
         // END tests for issue 281
 
-        // This is what I think these should look like related #256
-        // we don't have the ability yet
-//         bt('var a=1,b={bang:2},c=3;',
-//             'var a = 1,\n    b = {\n        bang: 2\n    },\n     c = 3;');
-//         bt('var a={bing:1},b=2,c=3;',
-//             'var a = {\n        bing: 1\n    },\n    b = 2,\n    c = 3;');
+        bt('var a=1,b={bang:2},c=3;',
+            'var a = 1,\n    b = {\n        bang: 2\n    },\n    c = 3;');
+        bt('var a={bing:1},b=2,c=3;',
+            'var a = {\n        bing: 1\n    },\n    b = 2,\n    c = 3;');
         Urlencoded.run_tests(sanitytest);
 
         bth('');
