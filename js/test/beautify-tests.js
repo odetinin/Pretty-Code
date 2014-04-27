@@ -682,6 +682,8 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
             "try\n{\n    a();\n}\ncatch (b)\n{\n    c();\n}\ncatch (d)\n{}\nfinally\n{\n    e();\n}");
         bt('if(a){b();}else if(c) foo();',
             "if (a)\n{\n    b();\n}\nelse if (c) foo();");
+        bt('if(X)if(Y)a();else b();else c();',
+            "if (X)\n    if (Y) a();\n    else b();\nelse c();");
         bt("if (a) {\n// comment\n}else{\n// comment\n}",
             "if (a)\n{\n    // comment\n}\nelse\n{\n    // comment\n}"); // if/else statement with empty body
         bt('if (x) {y} else { if (x) {y}}',
@@ -1862,6 +1864,41 @@ function run_beautifier_tests(test_obj, Urlencoded, js_beautify, html_beautify, 
             '<div>Some test text that should wrap_inside_this\n' +
             '    section here.</div>');
 
+        opts.indent_size = 1;
+        opts.indent_char = '\t';
+        opts.preserve_newlines = false;
+        bth('<div>\n\tfoo\n</div>', '<div>foo</div>');
+
+        opts.preserve_newlines = true;
+        bth('<div>\n\tfoo\n</div>');
+
+
+
+        // test preserve_newlines and max_preserve_newlines
+        opts.preserve_newlines = false;
+        test_fragment('<div>Should not</div>\n\n\n' +
+                      '<div>preserve newlines</div>',
+                      '<div>Should not</div>\n' +
+                      '<div>preserve newlines</div>');
+
+        opts.preserve_newlines = true;
+        opts.max_preserve_newlines  = 0;
+        test_fragment('<div>Should</div>\n\n\n' +
+                      '<div>preserve zero newlines</div>',
+                      '<div>Should</div>\n' +
+                      '<div>preserve zero newlines</div>');
+
+        opts.max_preserve_newlines  = 1;
+        test_fragment('<div>Should</div>\n\n\n' +
+                      '<div>preserve one newline</div>',
+                      '<div>Should</div>\n\n' +
+                      '<div>preserve one newline</div>');
+
+        opts.max_preserve_newlines  = null;
+        test_fragment('<div>Should</div>\n\n\n' +
+                      '<div>preserve one newline</div>',
+                      '<div>Should</div>\n\n\n' +
+                      '<div>preserve one newline</div>');
         // css beautifier
         opts.indent_size = 1;
         opts.indent_char = '\t';
