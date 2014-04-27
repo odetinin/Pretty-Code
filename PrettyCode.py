@@ -5,14 +5,15 @@ import os, subprocess, codecs
 class PrettyCodeCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
-        filename = self.view.file_name()
-        if filename == None:
-            return
 
         PLUGIN_FOLDER = os.path.dirname(os.path.realpath(__file__))
         PLUGIN_SETTINGS = sublime.load_settings('PrettyCode.sublime-settings').get('settings')
 
-        extension = os.path.basename(filename).split(".")[-1]
+        filename = self.view.file_name()
+        extension = ""
+        if filename != None:
+            extension = os.path.basename(filename).split(".")[-1]
+
         syntax = os.path.basename(self.view.settings().get('syntax')).replace('.tmLanguage', '').lower()
 
         mode = -1
@@ -39,7 +40,7 @@ class PrettyCodeCommand(sublime_plugin.TextCommand):
             # This allows for scratch buffers and dirty files to be beautified as well.
 
             bufferText = self.view.substr(sublime.Region(0, self.view.size()))
-            tempFile = PLUGIN_FOLDER + "/__temp__"
+            tempFile = PLUGIN_FOLDER + "/.__temp__"
             f = codecs.open(tempFile, mode = 'w', encoding = 'utf-8')
             f.write(bufferText)
             f.close()
