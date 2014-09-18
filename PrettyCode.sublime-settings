@@ -1,7 +1,7 @@
 {
     "node_path": "/usr/local/bin/node",
     "format_on_save": false,
-    "settings": {
+    "pretty": {
         "html": {
             "scope": ["html", "shtml", "xml", "xhtml"],
             // Options: "collapse", "expand", "end-expand", "expand-strict"

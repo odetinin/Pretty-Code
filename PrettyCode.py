@@ -2,25 +2,26 @@ import sublime
 import sublime_plugin
 import os, subprocess, codecs
 
+PLUGIN_FOLDER = os.path.dirname(os.path.realpath(__file__))
+PLUGIN_SETTINGS = sublime.load_settings('PrettyCode.sublime-settings')
+PRETTY_SETTINGS = PLUGIN_SETTINGS.get('pretty')
+
 class PrettyCodeCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
 
-        PLUGIN_FOLDER = os.path.dirname(os.path.realpath(__file__))
-        PLUGIN_SETTINGS = sublime.load_settings('PrettyCode.sublime-settings').get('settings')
-
         filename = self.view.file_name()
-        extension = ""
+        extension = ''
         if filename != None:
-            extension = os.path.basename(filename).split(".")[-1]
+            extension = os.path.basename(filename).split('.')[-1]
 
         syntax = os.path.basename(self.view.settings().get('syntax')).replace('.tmLanguage', '').lower()
 
         mode = -1
 
-        js_scope = PLUGIN_SETTINGS.get('js').get('scope')
-        html_scope = PLUGIN_SETTINGS.get('html').get('scope')
-        css_scope = PLUGIN_SETTINGS.get('css').get('scope')
+        js_scope = PRETTY_SETTINGS.get('js').get('scope')
+        html_scope = PRETTY_SETTINGS.get('html').get('scope')
+        css_scope = PRETTY_SETTINGS.get('css').get('scope')
 
         if js_scope != None:
             if syntax in js_scope or extension in js_scope:
@@ -40,22 +41,22 @@ class PrettyCodeCommand(sublime_plugin.TextCommand):
             # This allows for scratch buffers and dirty files to be beautified as well.
 
             bufferText = self.view.substr(sublime.Region(0, self.view.size()))
-            tempFile = PLUGIN_FOLDER + "/.__temp__"
+            tempFile = PLUGIN_FOLDER + '/.__temp__'
             f = codecs.open(tempFile, mode = 'w', encoding = 'utf-8')
             f.write(bufferText)
             f.close()
 
-            node = PLUGIN_SETTINGS.get("node_path")
+            node = PLUGIN_SETTINGS.get('node_path')
             if node == None:
                 node = 'node'
 
-            output = self.run_command([node, PLUGIN_FOLDER + '/libs/run.js', tempFile, str(mode), str(PLUGIN_SETTINGS).lower()])
+            output = self.run_command([node, PLUGIN_FOLDER + '/libs/run.js', tempFile, str(mode), str(PRETTY_SETTINGS).lower()])
             os.remove(tempFile)
 
             if len(output) > 0:
                 output = output.decode('utf-8')
-                if self.view.settings().get("ensure_newline_at_eof_on_save") and not output.endswith("\n"):
-                    output += "\n"
+                if self.view.settings().get('ensure_newline_at_eof_on_save') and not output.endswith('\n'):
+                    output += '\n'
                 if output != bufferText:
                     self.view.replace(edit, sublime.Region(0, self.view.size()), output)
 
@@ -90,5 +91,5 @@ class PrettyCodeCommand(sublime_plugin.TextCommand):
 
 class PreSaveFormatListner(sublime_plugin.EventListener):
     def on_pre_save(self, view):
-        if sublime.load_settings('PrettyCode.sublime-settings').get('format_on_save') == True:
-            view.run_command("pretty_code")
+        if PLUGIN_SETTINGS.get('format_on_save') == True:
+            view.run_command('pretty_code')
