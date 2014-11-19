@@ -19,9 +19,9 @@ class PrettyCodeCommand(sublime_plugin.TextCommand):
 
         mode = -1
 
-        js_scope = PRETTY_SETTINGS.get('js').get('scope')
-        html_scope = PRETTY_SETTINGS.get('html').get('scope')
-        css_scope = PRETTY_SETTINGS.get('css').get('scope')
+        js_scope = (PRETTY_SETTINGS.get('js')).get('scope')
+        html_scope = (PRETTY_SETTINGS.get('html')).get('scope')
+        css_scope = (PRETTY_SETTINGS.get('css')).get('scope')
 
         if js_scope != None:
             if syntax in js_scope or extension in js_scope:
